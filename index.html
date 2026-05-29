@@ -37,24 +37,14 @@
 </head>
 <body x-data class="bg-ink text-txt font-sans selection:bg-haz selection:text-bone">
 
-  <!-- ============ ДЕКОР ORAXIA: паутина по углам ============ -->
-  <div aria-hidden="true" class="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-    <svg class="absolute -top-1 -left-1 w-40 h-40 md:w-52 md:h-52 text-haz" style="opacity:.13" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1">
-      <path d="M0 0L160 0M0 0L150 60M0 0L113 113M0 0L60 150M0 0L0 160" />
-      <path d="M52 0L48 18 36 36 18 48 0 52" />
-      <path d="M104 0L96 34 73 73 34 96 0 104" />
-      <path d="M150 0L140 50 106 106 50 140 0 150" />
-    </svg>
-    <svg class="absolute -bottom-1 -right-1 w-44 h-44 md:w-56 md:h-56 text-haz" style="opacity:.11; transform:scale(-1,-1)" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1">
-      <path d="M0 0L160 0M0 0L150 60M0 0L113 113M0 0L60 150M0 0L0 160" />
-      <path d="M52 0L48 18 36 36 18 48 0 52" />
-      <path d="M104 0L96 34 73 73 34 96 0 104" />
-      <path d="M150 0L140 50 106 106 50 140 0 150" />
-    </svg>
-    <!-- Oraxia: фоновая «фреска» справа снизу, растворяется в темноте -->
-    <img src="media/oraxiafooter.png" alt=""
-      class="hidden lg:block absolute bottom-0 right-0 h-[82vh] max-h-[860px] object-contain select-none"
-      style="opacity:.16; mask-image:linear-gradient(305deg, black 0%, black 22%, transparent 62%); -webkit-mask-image:linear-gradient(305deg, black 0%, black 22%, transparent 62%);" />
+  <!-- ============ ФОН ORAXIA (на весь экран, любой монитор) ============ -->
+  <div aria-hidden="true" class="fixed inset-0 -z-10 pointer-events-none bg-ink">
+    <!-- арт: cover + center => заполняет любое соотношение сторон без искажений -->
+    <div class="absolute inset-0 bg-center bg-no-repeat bg-cover" style="background-image:url('media/oraxiabg.jpg')"></div>
+    <!-- затемняющий слой, чтобы текст и таблицы читались -->
+    <div class="absolute inset-0 bg-ink/80"></div>
+    <!-- виньетка: темнее по краям/снизу -->
+    <div class="absolute inset-0" style="background:radial-gradient(130% 90% at 50% 28%, transparent 0%, rgba(13,10,11,0.45) 60%, rgba(13,10,11,0.85) 100%)"></div>
   </div>
 
   <!-- ============ ПЕРЕТАСКИВАЕМЫЙ ПАУЧОК на паутине (справа сверху) ============ -->

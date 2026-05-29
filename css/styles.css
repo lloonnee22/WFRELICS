@@ -6,6 +6,9 @@
 html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 body { background: #0d0a0b; }
 
+/* Заголовки секций лежат прямо на фоне-арте — подложка-тень для читаемости. */
+#main header h1, #main header p, #main header > div { text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85); }
+
 /* Плавная подмена вкладок htmx: затухание старого -> проявление нового. */
 #main { transition: opacity 0.18s ease, transform 0.18s ease; }
 #main.htmx-swapping { opacity: 0; transform: translateY(6px); }
