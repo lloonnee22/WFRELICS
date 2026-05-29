@@ -82,7 +82,7 @@
   </div>
 
   <!-- ============ ШАПКА (центр. навигация + размытие) ============ -->
-  <header class="sticky top-0 z-40 bg-ink/70 backdrop-blur-xl border-b border-haz/40 shadow-[0_8px_24px_-12px_rgba(192,35,63,0.5)]">
+  <header class="sticky top-0 z-40 bg-ink/70 backdrop-blur-xl border-b border-line">
     <div class="max-w-[1320px] mx-auto grid grid-cols-[1fr_auto_1fr] items-center px-4 gap-2">
       <!-- логотип слева -->
       <span class="py-3 font-extrabold text-lg tracking-tight whitespace-nowrap">WF<span class="text-haz">RELICS</span></span>
@@ -108,10 +108,6 @@
 
       <!-- статус/язык справа -->
       <div class="flex items-center justify-end gap-4 py-2">
-        <span class="hidden lg:flex items-center gap-2 text-xs text-dim">
-          <i class="led"></i>
-          <span x-text="$store.wf.loaded ? ($store.wf.data.counts.items+' / '+$store.wf.data.counts.relics) : '…'"></span>
-        </span>
         <span class="hidden md:inline text-xs text-dim whitespace-nowrap">
           <span x-text="$store.wf.t('selected')"></span>: <b :class="$store.wf.selCount ? 'text-haz' : 'text-dim'" x-text="$store.wf.selCount"></b>
         </span>
@@ -130,11 +126,8 @@
   </main>
 
   <!-- ============ ПОДВАЛ ============ -->
-  <footer class="relative border-t border-haz/30 mt-14 overflow-hidden">
-    <img src="media/oraxiafooter.png" alt="" aria-hidden="true"
-      class="pointer-events-none select-none absolute -right-4 bottom-0 h-36 md:h-44 opacity-20 object-contain
-             [mask-image:linear-gradient(to_left,black,transparent)]" />
-    <div class="relative max-w-[1320px] mx-auto px-4 py-6 flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-dim">
+  <footer class="border-t border-line mt-14">
+    <div class="max-w-[1320px] mx-auto px-4 py-5 flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-dim">
       <span class="font-bold text-txt">WF<span class="text-haz">RELICS</span></span>
       <span x-show="$store.wf.loaded" x-text="$store.wf.t('data_sync')+': '+(new Date($store.wf.data.generatedAt).toLocaleDateString())"></span>
       <span class="ml-auto">© Digital Extremes Ltd. — <span x-text="$store.wf.t('footer')"></span></span>
