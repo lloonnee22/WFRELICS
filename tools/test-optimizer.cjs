@@ -39,11 +39,8 @@ const doc = window.document;
   await new Promise((r) => setTimeout(r, 150));
 
   const expected = store.locations.length;
-  const rows = doc.querySelectorAll('#main [style*="grid-template-columns:34px"]');
-  // первая строка с этим grid — заголовок колонок, остальные — локации
-  const locRows = [...rows].filter((r) => /%$/.test(r.textContent.trim().slice(-1) + '') || r.querySelector('.text-haz'));
   ok(expected > 0, `store.locations computed = ${expected}`);
-  ok(doc.querySelectorAll('#main .text-2xl.text-haz').length === expected, `rendered ${expected} location rows with eff%`);
+  ok(doc.querySelectorAll('#main .font-bold.text-haz.tabular-nums').length === expected, `rendered ${expected} location rows with eff%`);
 
   // фильтр по типу миссии отрисован
   const typeBtns = doc.querySelectorAll('#main button');
@@ -53,7 +50,7 @@ const doc = window.document;
   const t0 = store.availTypes()[0];
   store.toggleType(t0);
   await new Promise((r) => setTimeout(r, 120));
-  ok(doc.querySelectorAll('#main .text-2xl.text-haz').length === store.locations.length, `type filter re-renders rows (${store.locations.length})`);
+  ok(doc.querySelectorAll('#main .font-bold.text-haz.tabular-nums').length === store.locations.length, `type filter re-renders rows (${store.locations.length})`);
   ok(store.locations.every((l) => l.type === t0), `filtered locations all type ${t0}`);
 
   // нет старого «шанс части из релика» столбца / кнопок «все точки фарма»

@@ -47,41 +47,44 @@ const rRad = C.rankRelics(D, selected, 'Radiant')[0].combined;
 ok(rIntact !== rRad || true, `refinement changes combined (Intact ${rIntact} vs Radiant ${rRad})`);
 
 // ===== rankLocations (локации-первыми) =====
-const locs = C.rankLocations(D, selected, 'Radiant', null);
+const locs = C.rankLocations(D, selected, null);
 ok(locs.length > 0, `locations found = ${locs.length}`);
 ok(locs.every((l, i, a) => i === 0 || a[i - 1].eff >= l.eff), 'locations sorted by eff desc');
 ok(locs.every((l) => l.parts.length > 0), 'every location yields a wanted part');
 ok(locs.every((l) => l.avgRuns === (l.eff > 0 ? Math.ceil(100 / l.eff) : Infinity)), 'avgRuns = ceil(100/eff)');
 
-// проверка вычисления eff вручную для топ-локации
+// eff = СУММА шансов нужных реликвий за заход (без учёта шанса детали внутри релика)
 const tl = locs[0];
 let manualEff = 0;
+const targetRelicIds = new Set(D.relics.filter((r) => r.rewards.some((rw) => selected[rw.item])).map((r) => r.id));
 for (const r of D.relics) {
-  let pc = 0;
-  for (const rw of r.rewards) if (selected[rw.item]) pc += rw.chances.Radiant || 0;
-  if (pc <= 0) continue;
+  if (!targetRelicIds.has(r.id)) continue;
   for (const m of r.missions) {
     if (m.planet === tl.planet && m.node === tl.node && (m.type || '') === (tl.type || '') && (m.rotation || '') === (tl.rotation || '')) {
-      manualEff += (m.chance * pc) / 100;
+      manualEff += m.chance;
     }
   }
 }
-ok(Math.abs(tl.eff - Math.round(manualEff * 100) / 100) < 0.01, `top location eff matches manual calc (${tl.eff})`);
+ok(Math.abs(tl.eff - Math.round(manualEff * 100) / 100) < 0.01, `top location eff = sum of relic chances (${tl.eff})`);
+
+// одиночная локация: eff должен совпадать с шансом самой реликвии (как на карточке реликвии)
+const single = locs.find((l) => l.relics.length === 1);
+if (single) ok(Math.abs(single.eff - single.relics[0].relicChance) < 0.01, `single-relic eff equals relic drop chance (${single.eff}%)`);
 
 // фильтр по типу миссии
-const someType = locs.find((l) => l.type)?.type;
+const someType = locs.find((l) => l.type) && locs.find((l) => l.type).type;
 if (someType) {
-  const filtered = C.rankLocations(D, selected, 'Radiant', { [someType]: true });
+  const filtered = C.rankLocations(D, selected, { [someType]: true });
   ok(filtered.length > 0 && filtered.every((l) => l.type === someType), `type filter keeps only ${someType}`);
   ok(filtered.length <= locs.length, 'type filter narrows results');
 }
 
-// локация с пересечением (несколько целевых реликвий) существует и eff выше вклада одной
+// локация с пересечением (несколько целевых реликвий)
 const multi = locs.find((l) => l.relics.length > 1);
 if (multi) ok(multi.relics.length > 1, `intersection location exists (${multi.node}, ×${multi.relics.length})`);
 
 // пустой выбор -> нет локаций
-ok(C.rankLocations(D, {}, 'Radiant', null).length === 0, 'empty selection -> no locations');
+ok(C.rankLocations(D, {}, null).length === 0, 'empty selection -> no locations');
 
 console.log(fail === 0 ? '\nALL PASS' : `\n${fail} FAILURES`);
 process.exit(fail ? 1 : 0);

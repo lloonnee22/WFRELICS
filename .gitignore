@@ -1,5 +1,7 @@
 node_modules/
 .smoke-tmp/
+package.json
+package-lock.json
 .claude/
 .DS_Store
 Thumbs.db

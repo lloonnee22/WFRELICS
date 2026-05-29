@@ -53,10 +53,10 @@
     <!-- легенда ротаций -->
     <p x-show="$store.wf.selCount" class="text-[11px] text-dim leading-relaxed max-w-3xl border-l-2 border-haz/40 pl-3" x-text="$store.wf.t('rot_legend')"></p>
 
-    <!-- список локаций -->
-    <div x-show="$store.wf.selCount" class="space-y-2">
-      <div class="hidden md:grid items-center gap-3 px-3 text-[11px] uppercase tracking-wide text-dim"
-           style="grid-template-columns:34px minmax(180px,1.3fr) 130px minmax(220px,2fr) 64px">
+    <!-- список локаций (компактная таблица) -->
+    <div x-show="$store.wf.selCount" class="border border-line">
+      <div class="grid items-center gap-2 px-3 py-1.5 bg-panel2 text-[10px] uppercase tracking-wide text-dim border-b border-line"
+           style="grid-template-columns:30px minmax(150px,1.1fr) 88px minmax(220px,1.8fr) 56px">
         <div>#</div>
         <div x-text="$store.wf.t('col_loc')"></div>
         <div class="text-right" x-text="$store.wf.t('col_eff')"></div>
@@ -65,33 +65,30 @@
       </div>
 
       <template x-for="(l, i) in $store.wf.locations" :key="l.planet+'|'+l.node+'|'+(l.type||'')+'|'+(l.rotation||'')">
-        <div class="border border-line bg-panel hover:border-haz/50 transition-colors grid items-center gap-3 p-3"
-             style="grid-template-columns:34px minmax(180px,1.3fr) 130px minmax(220px,2fr) 64px">
-          <div class="text-sm text-dim font-mono" x-text="String(i+1).padStart(2,'0')"></div>
+        <div class="grid items-center gap-2 px-3 py-1.5 border-b border-line/50 last:border-0 hover:bg-panel text-sm"
+             style="grid-template-columns:30px minmax(150px,1.1fr) 88px minmax(220px,1.8fr) 56px">
+          <div class="text-xs text-dim font-mono" x-text="String(i+1).padStart(2,'0')"></div>
 
-          <div class="min-w-0">
-            <div class="font-semibold leading-tight truncate" x-text="(l.planet ? l.planet+' / ' : '')+l.node"></div>
-            <div class="flex items-center gap-2 mt-0.5 text-[11px] text-dim font-mono">
-              <span x-show="l.type" class="text-haz/80" x-text="l.type"></span>
-              <span x-show="l.rotation" x-text="$store.wf.t('rotation')+' '+l.rotation"></span>
-              <span x-show="l.relics.length>1" class="border border-haz/40 px-1 text-haz" x-text="'×'+l.relics.length"></span>
-            </div>
+          <div class="min-w-0 leading-tight">
+            <span class="font-medium" x-text="(l.planet ? l.planet+' / ' : '')+l.node"></span>
+            <span class="text-[11px] text-dim font-mono ml-1" x-show="l.type" x-text="l.type"></span>
+            <span class="text-[11px] text-dim font-mono ml-1" x-show="l.rotation" x-text="$store.wf.t('rotation')+l.rotation"></span>
+            <span x-show="l.relics.length>1" class="text-[10px] text-haz border border-haz/40 px-1 ml-1" x-text="'×'+l.relics.length"></span>
           </div>
 
-          <div class="text-right font-bold text-2xl text-haz tabular-nums" x-text="$store.wf.fmt(l.eff)+'%'"></div>
+          <div class="text-right font-bold text-base text-haz tabular-nums" x-text="$store.wf.fmt(l.eff)+'%'"></div>
 
-          <div class="min-w-0 text-sm">
-            <div class="leading-tight">
-              <template x-for="(p, pi) in l.parts" :key="p.item">
-                <span><span x-text="p.item"></span><span x-show="pi < l.parts.length-1" class="text-dim">, </span></span>
-              </template>
-            </div>
-            <div class="text-[11px] text-dim mt-0.5 truncate">
-              <span x-text="$store.wf.t('via')+': '"></span><span x-text="l.relics.map(r=>r.relic).filter((v,idx,a)=>a.indexOf(v)===idx).join(', ')"></span>
-            </div>
+          <div class="min-w-0 leading-tight text-xs space-y-0.5">
+            <template x-for="r in l.relics" :key="r.relic">
+              <div class="truncate">
+                <span class="font-mono text-txt" x-text="r.relic"></span>
+                <span class="text-dim tabular-nums" x-text="$store.wf.fmt(r.relicChance)+'%'"></span>
+                <span class="text-haz" x-text="'→ '+r.parts.join(', ')"></span>
+              </div>
+            </template>
           </div>
 
-          <div class="text-right font-mono tabular-nums" x-text="$store.wf.expected(l.eff)"></div>
+          <div class="text-right font-mono text-xs tabular-nums" x-text="$store.wf.expected(l.eff)"></div>
         </div>
       </template>
 

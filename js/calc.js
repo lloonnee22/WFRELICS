@@ -40,11 +40,12 @@
     return out;
   }
 
-  // Локации-первыми: где идти фармить. Для выбранных деталей агрегируем по миссиям
-  // ВСЕ реликвии-цели. Если в одной миссии падает несколько нужных реликвий — их
-  // вклады складываются (дропы «пересекаются»), и локация поднимается выше.
-  // eff (средний шанс за заход) = Σ по реликвиям [ P(реликвия с миссии) × P(нужная деталь в реликвии) ].
-  function rankLocations(data, selected, refinement, typeSel) {
+  // Локации-первыми: где идти фармить. Берём только реликвии, в которых есть нужная
+  // деталь, и агрегируем по миссиям. eff = шанс выбить НУЖНУЮ реликвию за заход.
+  // Если в одной миссии падает несколько нужных реликвий — их шансы складываются
+  // (рад любой из них), и локация поднимается выше. Шанс детали ВНУТРИ реликвии
+  // намеренно не учитываем — он одинаков везде и пользователю тут не нужен.
+  function rankLocations(data, selected, typeSel) {
     const sel = selected || {};
     const want = new Set(Object.keys(sel).filter((k) => sel[k]));
     if (!want.size || !data || !data.relics) return [];
@@ -53,20 +54,16 @@
 
     const byLoc = new Map();
     for (const r of data.relics) {
-      let partCombined = 0;
-      const parts = [];
-      for (const rw of r.rewards) {
-        if (want.has(rw.item)) { const c = rw.chances[refinement] || 0; partCombined += c; parts.push({ item: rw.item, chance: c, rarity: rw.rarity }); }
-      }
-      if (partCombined <= 0) continue;
+      const parts = r.rewards.filter((rw) => want.has(rw.item)).map((rw) => rw.item);
+      if (!parts.length) continue; // в этой реликвии нет наших деталей
       for (const m of r.missions || []) {
         if (!typeOk(m.type)) continue;
         const key = (m.planet || '') + '|' + m.node + '|' + (m.type || '') + '|' + (m.rotation || '');
         let loc = byLoc.get(key);
         if (!loc) { loc = { planet: m.planet, node: m.node, type: m.type, rotation: m.rotation, eff: 0, relics: [], partSet: {} }; byLoc.set(key, loc); }
-        loc.eff += (m.chance * partCombined) / 100; // вклад этой реликвии в шанс за заход (%)
+        loc.eff += m.chance; // шанс выбить эту реликвию за заход (%)
         loc.relics.push({ relic: r.id, tier: r.tier, relicChance: m.chance, parts });
-        for (const p of parts) loc.partSet[p.item] = (loc.partSet[p.item] || p);
+        for (const p of parts) loc.partSet[p] = true;
       }
     }
 
@@ -77,7 +74,7 @@
         eff,
         avgRuns: eff > 0 ? Math.ceil(100 / eff) : Infinity,
         relics: l.relics.sort((a, b) => b.relicChance - a.relicChance),
-        parts: Object.values(l.partSet), // уникальные нужные детали, доступные тут
+        parts: Object.keys(l.partSet), // уникальные нужные детали, доступные тут
       };
     });
     out.sort((a, b) => b.eff - a.eff || a.avgRuns - b.avgRuns);
