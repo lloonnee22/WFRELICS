@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WFRELICS — Warframe relic & prime farm planner</title>
+  <meta name="description" content="Current Warframe prime items, relics and a farm optimizer: pick the exact parts you need and see which relics to crack." />
+  <link rel="icon" type="image/x-icon" href="media/oraxia.ico" />
+  <link rel="shortcut icon" href="media/oraxia.ico" />
+
+  <link rel="preconnect" href="https://cdn.warframestat.us" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Палитра Oraxia: «кровь и кость» — тёплый тёмный фон, кремовый текст, малиновый/алый акцент.
+    tailwind.config = {
+      theme: {
+        borderRadius: { none: '0', sm: '0', DEFAULT: '0', md: '0', lg: '0', xl: '0', '2xl': '0', '3xl': '0', full: '0' },
+        extend: {
+          colors: {
+            ink: '#0d0a0b', panel: '#181012', panel2: '#21161a',
+            txt: '#ece0cb', dim: '#a3938b', line: '#39262c',
+            haz: '#c0233f', hot: '#e8455c', bone: '#ece0cb',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['"Space Mono"', 'ui-monospace', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body x-data class="bg-ink text-txt font-sans selection:bg-haz selection:text-bone">
+
+  <!-- ============ ШАПКА ============ -->
+  <header class="sticky top-0 z-40 bg-ink/95 backdrop-blur border-b border-haz/40">
+    <div class="max-w-[1320px] mx-auto flex items-center flex-wrap px-4">
+      <span class="py-3 pr-5 font-extrabold text-lg tracking-tight">WF<span class="text-haz">RELICS</span></span>
+
+      <nav x-data="{ view: 'catalog' }" class="flex items-stretch">
+        <button hx-get="partials/catalog.html" hx-target="#main" hx-swap="innerHTML" @click="view='catalog'"
+          :class="view==='catalog' ? 'text-txt border-haz' : 'text-dim hover:text-txt border-transparent'"
+          class="px-4 py-3 text-sm border-b-2 transition-colors">
+          <span class="font-mono text-xs text-haz/70">01</span> <span x-text="$store.wf.t('nav_catalog')"></span>
+        </button>
+        <button hx-get="partials/relics.html" hx-target="#main" hx-swap="innerHTML" @click="view='relics'"
+          :class="view==='relics' ? 'text-txt border-haz' : 'text-dim hover:text-txt border-transparent'"
+          class="px-4 py-3 text-sm border-b-2 transition-colors">
+          <span class="font-mono text-xs text-haz/70">02</span> <span x-text="$store.wf.t('nav_relics')"></span>
+        </button>
+        <button hx-get="partials/calc.html" hx-target="#main" hx-swap="innerHTML" @click="view='calc'"
+          :class="view==='calc' ? 'text-txt border-haz' : 'text-dim hover:text-txt border-transparent'"
+          class="px-4 py-3 text-sm border-b-2 transition-colors">
+          <span class="font-mono text-xs text-haz/70">03</span> <span x-text="$store.wf.t('nav_optimizer')"></span><span x-show="$store.wf.selCount" class="text-haz font-bold" x-text="' ('+$store.wf.selCount+')'"></span>
+        </button>
+      </nav>
+
+      <div class="ml-auto flex items-center gap-4 py-2">
+        <span class="hidden sm:flex items-center gap-2 text-xs text-dim">
+          <i class="led"></i>
+          <span x-text="$store.wf.loaded ? ($store.wf.data.counts.items+' / '+$store.wf.data.counts.relics) : '…'"></span>
+        </span>
+        <span class="hidden md:inline text-xs text-dim">
+          <span x-text="$store.wf.t('selected')"></span>: <b :class="$store.wf.selCount ? 'text-haz' : 'text-dim'" x-text="$store.wf.selCount"></b>
+        </span>
+        <button data-lang-toggle @click="$store.wf.toggleLang()"
+          class="text-xs border border-line px-2.5 py-1 hover:border-haz transition-colors">
+          <span :class="$store.wf.lang==='en' && 'text-haz font-bold'">EN</span><span class="text-line mx-0.5">·</span><span :class="$store.wf.lang==='ru' && 'text-haz font-bold'">RU</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ КОНТЕНТ (htmx SPA) ============ -->
+  <main id="main" class="min-h-[60vh] px-4 md:px-6 py-7 max-w-[1320px] mx-auto w-full"
+        hx-get="partials/catalog.html" hx-trigger="load" hx-target="#main" hx-swap="innerHTML">
+    <div class="text-dim text-sm" x-text="$store.wf.t('loading')"></div>
+  </main>
+
+  <!-- ============ ПОДВАЛ ============ -->
+  <footer class="border-t border-haz/30 mt-14">
+    <div class="max-w-[1320px] mx-auto px-4 py-4 flex flex-wrap gap-x-6 gap-y-1 text-xs text-dim">
+      <span class="font-bold text-txt">WF<span class="text-haz">RELICS</span></span>
+      <span x-show="$store.wf.loaded" x-text="$store.wf.t('data_sync')+': '+(new Date($store.wf.data.generatedAt).toLocaleDateString())"></span>
+      <span class="ml-auto">© Digital Extremes Ltd. — <span x-text="$store.wf.t('footer')"></span></span>
+    </div>
+  </footer>
+
+  <!-- порядок: calc -> store (вешает alpine:init) -> alpine -> htmx -->
+  <script src="js/calc.js"></script>
+  <script src="js/store.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.x.x"></script>
+</body>
+</html>

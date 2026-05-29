@@ -1,0 +1,24 @@
+/* WFRELICS — минимализм, палитра Oraxia («кровь и кость»). Основной стиль — Tailwind. */
+
+/* Прямые углы. */
+* { border-radius: 0 !important; }
+
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body { background: #0d0a0b; }
+
+/* Алый индикатор статуса (глаз Oraxia). */
+@keyframes led { 50% { opacity: 0.3; } }
+.led { display: inline-block; width: 7px; height: 7px; background: #e8455c; box-shadow: 0 0 7px #e8455c; animation: led 1.8s steps(2, jump-none) infinite; }
+
+/* Плавная подмена контента htmx. */
+#main { transition: opacity 0.12s ease; }
+#main.htmx-swapping { opacity: 0.4; }
+
+/* Скроллбары в тон. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0d0a0b; }
+::-webkit-scrollbar-thumb { background: #39262c; }
+::-webkit-scrollbar-thumb:hover { background: #c0233f; }
+
+/* Аккуратное скрытие «битых» картинок. */
+img.broken { visibility: hidden; }

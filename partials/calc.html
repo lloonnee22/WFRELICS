@@ -1,0 +1,124 @@
+<section x-data="{ open: {} }" class="space-y-6">
+  <template x-if="!$store.wf.loaded">
+    <div class="font-mono text-dim text-sm" x-text="$store.wf.t('loading')"></div>
+  </template>
+
+  <div x-show="$store.wf.loaded" class="space-y-6">
+    <header class="space-y-2">
+      <div class="font-mono text-xs tracking-widest text-haz" x-text="$store.wf.t('opt_label')"></div>
+      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight" x-text="$store.wf.t('opt_title')"></h1>
+      <p class="text-sm text-dim max-w-2xl leading-relaxed" x-text="$store.wf.t('opt_sub')"></p>
+    </header>
+
+    <!-- управление -->
+    <div class="flex flex-wrap gap-4 items-center">
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-xs text-dim" x-text="$store.wf.t('refine')+':'"></span>
+        <div class="flex">
+          <template x-for="s in $store.wf.data.states" :key="s">
+            <button @click="$store.wf.refinement=s"
+              :class="$store.wf.refinement===s ? 'bg-haz text-ink border-haz' : 'bg-panel text-dim border-line hover:text-txt'"
+              class="px-3 py-1.5 text-xs border -ml-px first:ml-0" x-text="$store.wf.stateName(s)"></button>
+          </template>
+        </div>
+      </div>
+      <button x-show="$store.wf.selCount" @click="$store.wf.clearSel()"
+        class="px-3 py-1.5 text-xs border border-line text-dim hover:text-haz hover:border-haz ml-auto" x-text="'× '+$store.wf.t('reset')"></button>
+    </div>
+
+    <!-- выбранные детали -->
+    <div class="border border-line bg-panel p-3" x-show="$store.wf.selCount">
+      <div class="font-mono text-xs text-dim mb-2"><span x-text="$store.wf.t('selected')"></span>: <span class="text-haz font-bold" x-text="$store.wf.selCount"></span></div>
+      <div class="flex flex-wrap gap-2">
+        <template x-for="k in $store.wf.selKeys" :key="k">
+          <span class="flex items-center gap-2 border border-haz/50 bg-ink px-2 py-1 text-sm">
+            <span class="text-haz" x-text="k"></span>
+            <button @click="$store.wf.remove(k)" class="text-dim hover:text-haz">×</button>
+          </span>
+        </template>
+      </div>
+    </div>
+
+    <!-- пусто -->
+    <div x-show="!$store.wf.selCount" class="border border-line bg-panel p-10 text-center space-y-2">
+      <div class="text-2xl font-bold text-dim" x-text="$store.wf.t('empty_title')"></div>
+      <p class="text-sm text-dim" x-text="$store.wf.t('empty_text')"></p>
+    </div>
+
+    <!-- легенда ротаций -->
+    <p x-show="$store.wf.selCount" class="font-mono text-[11px] text-dim leading-relaxed max-w-3xl border-l-2 border-line pl-3"
+       x-text="$store.wf.t('rot_legend')"></p>
+
+    <!-- ранжированные реликвии -->
+    <div x-show="$store.wf.selCount" class="space-y-2">
+      <!-- заголовки колонок -->
+      <div class="hidden md:grid items-center gap-3 px-3 font-mono text-[10px] tracking-wide text-dim"
+           style="grid-template-columns:34px minmax(150px,1.1fr) 92px minmax(180px,2fr) 64px 150px">
+        <div>#</div>
+        <div x-text="$store.wf.t('col_relic')"></div>
+        <div class="text-right" x-text="$store.wf.t('col_chance')"></div>
+        <div x-text="$store.wf.t('col_parts')"></div>
+        <div class="text-right" x-text="$store.wf.t('col_runs')"></div>
+        <div class="text-right" x-text="$store.wf.t('col_farm')"></div>
+      </div>
+
+      <template x-for="(r, i) in $store.wf.ranked" :key="r.id">
+        <div class="border border-line bg-panel">
+          <!-- сводка -->
+          <div class="grid items-center gap-3 p-3"
+               style="grid-template-columns:34px minmax(150px,1.1fr) 92px minmax(180px,2fr) 64px 150px">
+            <div class="font-mono text-sm text-dim" x-text="String(i+1).padStart(2,'0')"></div>
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-9 h-9 border border-line flex items-center justify-center shrink-0 bg-ink">
+                <img :src="$store.wf.cdn(r.image)" loading="lazy" alt="" class="max-w-full max-h-full object-contain" onerror="this.classList.add('broken')" />
+              </div>
+              <div class="min-w-0">
+                <div class="font-bold leading-none truncate" x-text="r.id"></div>
+                <div class="font-mono text-[10px] text-dim" x-text="r.tier"></div>
+              </div>
+            </div>
+            <div class="text-right font-bold text-2xl text-haz tabular-nums" x-text="$store.wf.fmt(r.combined)+'%'"></div>
+            <div class="text-sm space-y-0.5 min-w-0">
+              <template x-for="h in r.hits" :key="h.item">
+                <div class="flex justify-between gap-2">
+                  <span class="truncate" :class="$store.wf.rarityClass(h.rarity)" x-text="h.item"></span>
+                  <span class="font-mono text-xs text-dim tabular-nums shrink-0" x-text="$store.wf.fmt(h.chance)+'%'"></span>
+                </div>
+              </template>
+            </div>
+            <div class="text-right font-mono tabular-nums" x-text="$store.wf.expected(r.combined)"></div>
+            <div class="text-right">
+              <button x-show="r.missions.length" @click="open[r.id]=!open[r.id]"
+                class="font-mono text-[11px] border border-line px-2 py-1 text-dim hover:text-txt hover:border-haz whitespace-nowrap"
+                x-text="(open[r.id] ? $store.wf.t('hide_farm') : $store.wf.t('show_farm'))+' ('+r.missions.length+')'"></button>
+              <span x-show="!r.missions.length" class="font-mono text-[11px] text-dim" x-text="$store.wf.t('special')"></span>
+            </div>
+          </div>
+
+          <!-- полный список карт фарма -->
+          <div x-show="open[r.id]" class="border-t border-line">
+            <div class="grid gap-0 font-mono text-xs bg-panel2 text-dim px-3 py-1.5"
+                 style="grid-template-columns:1fr 120px 70px">
+              <div x-text="$store.wf.t('location')"></div>
+              <div x-text="$store.wf.t('rotation')"></div>
+              <div class="text-right" x-text="$store.wf.t('chance')"></div>
+            </div>
+            <div class="max-h-80 overflow-y-auto">
+              <template x-for="m in r.missions" :key="m.planet+'|'+m.node+'|'+(m.rotation||'')+'|'+m.chance">
+                <div class="grid gap-0 text-sm px-3 py-1 border-t border-line/50" style="grid-template-columns:1fr 120px 70px">
+                  <div class="truncate" x-text="$store.wf.missionLabel(m)"></div>
+                  <div class="font-mono text-xs text-dim" x-text="m.rotation ? m.rotation : '—'"></div>
+                  <div class="text-right font-mono text-xs tabular-nums" :class="m.chance>=5 ? 'text-haz' : 'text-dim'" x-text="$store.wf.fmt(m.chance)+'%'"></div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <div x-show="!$store.wf.ranked.length" class="p-6 text-dim text-sm text-center" x-text="$store.wf.t('no_relics')"></div>
+    </div>
+
+    <p x-show="$store.wf.selCount" class="text-[11px] text-dim leading-relaxed max-w-3xl" x-text="$store.wf.t('note')"></p>
+  </div>
+</section>

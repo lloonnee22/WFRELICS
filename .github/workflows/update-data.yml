@@ -1,0 +1,38 @@
+name: Обновление данных дропа
+
+# Реликвии и прайм-предметы ваултятся/анваултятся примерно раз в квартал.
+# Этот воркфлоу сам пересобирает data/primes.json по расписанию и коммитит изменения,
+# поэтому на захостенном сайте дропы обновляются автоматически.
+
+on:
+  schedule:
+    - cron: '17 6 * * *'   # каждый день в 06:17 UTC
+  workflow_dispatch: {}      # и вручную по кнопке
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Пересобрать данные
+        run: node tools/build-data.mjs
+
+      - name: Закоммитить, если изменилось
+        run: |
+          if [[ -n "$(git status --porcelain data/primes.json)" ]]; then
+            git config user.name "wfrelics-bot"
+            git config user.email "actions@github.com"
+            git add data/primes.json
+            git commit -m "chore(data): авто-обновление дропа $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "Данные не изменились — коммит не нужен."
+          fi

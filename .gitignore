@@ -1,0 +1,6 @@
+node_modules/
+.smoke-tmp/
+.claude/
+.DS_Store
+Thumbs.db
+*.log

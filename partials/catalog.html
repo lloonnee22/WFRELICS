@@ -1,0 +1,62 @@
+<section x-data class="space-y-6">
+  <template x-if="!$store.wf.loaded && !$store.wf.error">
+    <div class="font-mono text-dim text-sm" x-text="$store.wf.t('loading')"></div>
+  </template>
+  <template x-if="$store.wf.error">
+    <div class="border border-haz p-4 font-mono text-sm text-haz leading-relaxed">
+      <span x-text="$store.wf.t('data_error')"></span>: <span x-text="$store.wf.error"></span><br />
+      <span class="text-dim" x-text="'» '+$store.wf.t('data_hint')"></span>
+    </div>
+  </template>
+
+  <div x-show="$store.wf.loaded" class="space-y-6">
+    <header class="space-y-2">
+      <div class="font-mono text-xs tracking-widest text-haz" x-text="$store.wf.t('cat_label')"></div>
+      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight" x-text="$store.wf.t('cat_title')"></h1>
+      <p class="text-sm text-dim max-w-2xl leading-relaxed" x-text="$store.wf.t('cat_sub')"></p>
+    </header>
+
+    <!-- поиск + фильтры -->
+    <div class="flex flex-wrap gap-2 items-center">
+      <input type="search" x-model="$store.wf.q" :placeholder="$store.wf.t('search')"
+        class="bg-panel border border-line px-3 py-2 text-sm placeholder:text-dim focus:border-haz outline-none w-48" />
+      <template x-for="c in $store.wf.cats()" :key="c">
+        <button @click="$store.wf.itemCat=c"
+          :class="$store.wf.itemCat===c ? 'bg-txt text-ink border-txt' : 'bg-panel text-dim border-line hover:text-txt'"
+          class="px-3 py-2 text-xs border" x-text="c==='all' ? $store.wf.t('all') : $store.wf.catName(c)"></button>
+      </template>
+    </div>
+
+    <!-- сетка предметов -->
+    <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(248px,1fr))">
+      <template x-for="(it, idx) in $store.wf.filteredItems()" :key="it.name">
+        <article class="bg-panel border border-line hover:border-dim transition-colors flex flex-col">
+          <div class="flex items-center justify-between px-3 pt-2 font-mono text-[10px] tracking-wide text-dim">
+            <span x-text="'#'+String(idx+1).padStart(3,'0')"></span>
+            <span class="text-haz" x-text="$store.wf.catName(it.category)"></span>
+          </div>
+          <div class="flex gap-3 items-center px-3 pt-2 pb-3">
+            <div class="w-14 h-14 border border-line flex items-center justify-center shrink-0 bg-ink">
+              <img :src="$store.wf.cdn(it.image)" loading="lazy" alt="" class="max-w-full max-h-full object-contain" onerror="this.classList.add('broken')" />
+            </div>
+            <div class="min-w-0">
+              <div class="font-semibold leading-tight" x-text="it.name"></div>
+              <div class="font-mono text-[11px] text-dim mt-0.5" x-text="it.parts.length+' '+$store.wf.t('parts')"></div>
+            </div>
+          </div>
+          <div class="border-t border-line px-3 py-2 space-y-1.5 mt-auto">
+            <template x-for="p in it.parts" :key="p.name">
+              <label class="flex items-center gap-2.5 cursor-pointer text-sm group">
+                <input type="checkbox" :checked="$store.wf.isSel(p.name)" @change="$store.wf.toggle(p.name)"
+                  class="appearance-none w-4 h-4 border border-line bg-ink checked:bg-haz checked:border-haz shrink-0 cursor-pointer" />
+                <span :class="$store.wf.isSel(p.name) ? 'text-haz font-medium' : 'text-txt group-hover:text-haz'" x-text="p.short"></span>
+              </label>
+            </template>
+          </div>
+        </article>
+      </template>
+    </div>
+
+    <div x-show="!$store.wf.filteredItems().length" class="text-dim text-sm py-10 text-center" x-text="$store.wf.t('nothing')"></div>
+  </div>
+</section>

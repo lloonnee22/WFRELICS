@@ -1,0 +1,60 @@
+<section x-data class="space-y-6">
+  <template x-if="!$store.wf.loaded">
+    <div class="font-mono text-dim text-sm" x-text="$store.wf.t('loading')"></div>
+  </template>
+
+  <div x-show="$store.wf.loaded" class="space-y-6">
+    <header class="space-y-2">
+      <div class="font-mono text-xs tracking-widest text-haz" x-text="$store.wf.t('rel_label')"></div>
+      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight" x-text="$store.wf.t('rel_title')"></h1>
+      <p class="text-sm text-dim max-w-2xl leading-relaxed" x-text="$store.wf.t('rel_sub')"></p>
+    </header>
+
+    <div class="flex flex-wrap gap-2 items-center">
+      <template x-for="t in $store.wf.tiers()" :key="t">
+        <button @click="$store.wf.relicTier=t"
+          :class="$store.wf.relicTier===t ? 'bg-txt text-ink border-txt' : 'bg-panel text-dim border-line hover:text-txt'"
+          class="px-3 py-2 text-xs border" x-text="t==='all' ? $store.wf.t('all') : t"></button>
+      </template>
+    </div>
+
+    <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+      <template x-for="r in $store.wf.filteredRelics()" :key="r.id">
+        <article class="bg-panel border border-line">
+          <div class="flex items-center gap-3 border-b border-line p-3">
+            <div class="w-11 h-11 border border-line flex items-center justify-center shrink-0 bg-ink">
+              <img :src="$store.wf.cdn(r.image)" loading="lazy" alt="" class="max-w-full max-h-full object-contain" onerror="this.classList.add('broken')" />
+            </div>
+            <div>
+              <div class="text-lg font-bold leading-none" x-text="r.id"></div>
+              <div class="font-mono text-[11px] text-dim" x-text="$store.wf.t('tier')+' · '+r.tier"></div>
+            </div>
+            <div class="ml-auto text-right" x-show="r.missions.length">
+              <div class="font-mono text-[10px] text-dim" x-text="$store.wf.t('best_farm')"></div>
+              <div class="text-haz font-bold" x-text="$store.wf.fmt(r.missions[0].chance)+'%'"></div>
+            </div>
+          </div>
+
+          <div class="p-3 space-y-1.5 text-sm">
+            <template x-for="rw in r.rewards" :key="rw.item">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 shrink-0 border border-line" :class="rw.rarity==='Rare' ? 'bg-haz' : rw.rarity==='Uncommon' ? 'bg-txt' : 'bg-dim'"></span>
+                <template x-if="rw.available">
+                  <input type="checkbox" :checked="$store.wf.isSel(rw.item)" @change="$store.wf.toggle(rw.item)"
+                    class="appearance-none w-3.5 h-3.5 border border-line bg-ink checked:bg-haz checked:border-haz shrink-0 cursor-pointer" />
+                </template>
+                <span class="flex-1 truncate" :class="rw.available ? 'text-haz' : 'text-txt'" :title="rw.item" x-text="rw.item"></span>
+                <span class="font-mono text-xs text-dim tabular-nums" x-text="$store.wf.fmt(rw.chances.Intact)+'%'"></span>
+              </div>
+            </template>
+          </div>
+
+          <div class="border-t border-line px-3 py-2 font-mono text-[11px] text-dim" x-show="r.missions.length">
+            <span x-text="$store.wf.t('drops_from')+': '"></span><span class="text-txt" x-text="$store.wf.missionLabel(r.missions[0])"></span>
+            <span x-show="r.missions[0].rotation" x-text="' · '+$store.wf.rotLabel(r.missions[0])"></span>
+          </div>
+        </article>
+      </template>
+    </div>
+  </div>
+</section>
