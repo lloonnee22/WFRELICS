@@ -1,6 +1,6 @@
-<section x-data="{ open: {} }" class="space-y-6">
+<section x-data class="space-y-6">
   <template x-if="!$store.wf.loaded">
-    <div class="font-mono text-dim text-sm" x-text="$store.wf.t('loading')"></div>
+    <div class="text-dim text-sm" x-text="$store.wf.t('loading')"></div>
   </template>
 
   <div x-show="$store.wf.loaded" class="space-y-6">
@@ -13,11 +13,11 @@
     <!-- управление -->
     <div class="flex flex-wrap gap-4 items-center">
       <div class="flex items-center gap-2">
-        <span class="font-mono text-xs text-dim" x-text="$store.wf.t('refine')+':'"></span>
+        <span class="text-xs text-dim" x-text="$store.wf.t('refine')+':'"></span>
         <div class="flex">
           <template x-for="s in $store.wf.data.states" :key="s">
             <button @click="$store.wf.refinement=s"
-              :class="$store.wf.refinement===s ? 'bg-haz text-ink border-haz' : 'bg-panel text-dim border-line hover:text-txt'"
+              :class="$store.wf.refinement===s ? 'bg-haz text-bone border-haz' : 'bg-panel text-dim border-line hover:text-txt'"
               class="px-3 py-1.5 text-xs border -ml-px first:ml-0" x-text="$store.wf.stateName(s)"></button>
           </template>
         </div>
@@ -28,7 +28,7 @@
 
     <!-- выбранные детали -->
     <div class="border border-line bg-panel p-3" x-show="$store.wf.selCount">
-      <div class="font-mono text-xs text-dim mb-2"><span x-text="$store.wf.t('selected')"></span>: <span class="text-haz font-bold" x-text="$store.wf.selCount"></span></div>
+      <div class="text-xs text-dim mb-2"><span x-text="$store.wf.t('selected')"></span>: <span class="text-haz font-bold" x-text="$store.wf.selCount"></span></div>
       <div class="flex flex-wrap gap-2">
         <template x-for="k in $store.wf.selKeys" :key="k">
           <span class="flex items-center gap-2 border border-haz/50 bg-ink px-2 py-1 text-sm">
@@ -45,78 +45,67 @@
       <p class="text-sm text-dim" x-text="$store.wf.t('empty_text')"></p>
     </div>
 
-    <!-- легенда ротаций -->
-    <p x-show="$store.wf.selCount" class="font-mono text-[11px] text-dim leading-relaxed max-w-3xl border-l-2 border-line pl-3"
-       x-text="$store.wf.t('rot_legend')"></p>
+    <!-- фильтр по типу миссии -->
+    <div x-show="$store.wf.selCount && $store.wf.availTypes().length" class="space-y-2">
+      <div class="text-xs text-dim" x-text="$store.wf.t('filter_type')+':'"></div>
+      <div class="flex flex-wrap gap-1.5">
+        <button @click="$store.wf.clearTypes()"
+          :class="$store.wf.typeCount===0 ? 'bg-haz text-bone border-haz' : 'bg-panel text-dim border-line hover:text-txt'"
+          class="px-2.5 py-1 text-xs border" x-text="$store.wf.t('all')"></button>
+        <template x-for="t in $store.wf.availTypes()" :key="t">
+          <button @click="$store.wf.toggleType(t)"
+            :class="$store.wf.typeOn(t) ? 'bg-haz text-bone border-haz' : 'bg-panel text-dim border-line hover:text-txt'"
+            class="px-2.5 py-1 text-xs border" x-text="t"></button>
+        </template>
+      </div>
+    </div>
 
-    <!-- ранжированные реликвии -->
+    <!-- легенда ротаций -->
+    <p x-show="$store.wf.selCount" class="text-[11px] text-dim leading-relaxed max-w-3xl border-l-2 border-haz/40 pl-3" x-text="$store.wf.t('rot_legend')"></p>
+
+    <!-- список локаций -->
     <div x-show="$store.wf.selCount" class="space-y-2">
-      <!-- заголовки колонок -->
-      <div class="hidden md:grid items-center gap-3 px-3 font-mono text-[10px] tracking-wide text-dim"
-           style="grid-template-columns:34px minmax(150px,1.1fr) 92px minmax(180px,2fr) 64px 150px">
+      <div class="hidden md:grid items-center gap-3 px-3 text-[11px] uppercase tracking-wide text-dim"
+           style="grid-template-columns:34px minmax(180px,1.3fr) 130px minmax(220px,2fr) 64px">
         <div>#</div>
-        <div x-text="$store.wf.t('col_relic')"></div>
-        <div class="text-right" x-text="$store.wf.t('col_chance')"></div>
-        <div x-text="$store.wf.t('col_parts')"></div>
+        <div x-text="$store.wf.t('col_loc')"></div>
+        <div class="text-right" x-text="$store.wf.t('col_eff')"></div>
+        <div x-text="$store.wf.t('col_gets')"></div>
         <div class="text-right" x-text="$store.wf.t('col_runs')"></div>
-        <div class="text-right" x-text="$store.wf.t('col_farm')"></div>
       </div>
 
-      <template x-for="(r, i) in $store.wf.ranked" :key="r.id">
-        <div class="border border-line bg-panel">
-          <!-- сводка -->
-          <div class="grid items-center gap-3 p-3"
-               style="grid-template-columns:34px minmax(150px,1.1fr) 92px minmax(180px,2fr) 64px 150px">
-            <div class="font-mono text-sm text-dim" x-text="String(i+1).padStart(2,'0')"></div>
-            <div class="flex items-center gap-2 min-w-0">
-              <div class="w-9 h-9 border border-line flex items-center justify-center shrink-0 bg-ink">
-                <img :src="$store.wf.cdn(r.image)" loading="lazy" alt="" class="max-w-full max-h-full object-contain" onerror="this.classList.add('broken')" />
-              </div>
-              <div class="min-w-0">
-                <div class="font-bold leading-none truncate" x-text="r.id"></div>
-                <div class="font-mono text-[10px] text-dim" x-text="r.tier"></div>
-              </div>
-            </div>
-            <div class="text-right font-bold text-2xl text-haz tabular-nums" x-text="$store.wf.fmt(r.combined)+'%'"></div>
-            <div class="text-sm space-y-0.5 min-w-0">
-              <template x-for="h in r.hits" :key="h.item">
-                <div class="flex justify-between gap-2">
-                  <span class="truncate" :class="$store.wf.rarityClass(h.rarity)" x-text="h.item"></span>
-                  <span class="font-mono text-xs text-dim tabular-nums shrink-0" x-text="$store.wf.fmt(h.chance)+'%'"></span>
-                </div>
-              </template>
-            </div>
-            <div class="text-right font-mono tabular-nums" x-text="$store.wf.expected(r.combined)"></div>
-            <div class="text-right">
-              <button x-show="r.missions.length" @click="open[r.id]=!open[r.id]"
-                class="font-mono text-[11px] border border-line px-2 py-1 text-dim hover:text-txt hover:border-haz whitespace-nowrap"
-                x-text="(open[r.id] ? $store.wf.t('hide_farm') : $store.wf.t('show_farm'))+' ('+r.missions.length+')'"></button>
-              <span x-show="!r.missions.length" class="font-mono text-[11px] text-dim" x-text="$store.wf.t('special')"></span>
+      <template x-for="(l, i) in $store.wf.locations" :key="l.planet+'|'+l.node+'|'+(l.type||'')+'|'+(l.rotation||'')">
+        <div class="border border-line bg-panel hover:border-haz/50 transition-colors grid items-center gap-3 p-3"
+             style="grid-template-columns:34px minmax(180px,1.3fr) 130px minmax(220px,2fr) 64px">
+          <div class="text-sm text-dim font-mono" x-text="String(i+1).padStart(2,'0')"></div>
+
+          <div class="min-w-0">
+            <div class="font-semibold leading-tight truncate" x-text="(l.planet ? l.planet+' / ' : '')+l.node"></div>
+            <div class="flex items-center gap-2 mt-0.5 text-[11px] text-dim font-mono">
+              <span x-show="l.type" class="text-haz/80" x-text="l.type"></span>
+              <span x-show="l.rotation" x-text="$store.wf.t('rotation')+' '+l.rotation"></span>
+              <span x-show="l.relics.length>1" class="border border-haz/40 px-1 text-haz" x-text="'×'+l.relics.length"></span>
             </div>
           </div>
 
-          <!-- полный список карт фарма -->
-          <div x-show="open[r.id]" class="border-t border-line">
-            <div class="grid gap-0 font-mono text-xs bg-panel2 text-dim px-3 py-1.5"
-                 style="grid-template-columns:1fr 120px 70px">
-              <div x-text="$store.wf.t('location')"></div>
-              <div x-text="$store.wf.t('rotation')"></div>
-              <div class="text-right" x-text="$store.wf.t('chance')"></div>
-            </div>
-            <div class="max-h-80 overflow-y-auto">
-              <template x-for="m in r.missions" :key="m.planet+'|'+m.node+'|'+(m.rotation||'')+'|'+m.chance">
-                <div class="grid gap-0 text-sm px-3 py-1 border-t border-line/50" style="grid-template-columns:1fr 120px 70px">
-                  <div class="truncate" x-text="$store.wf.missionLabel(m)"></div>
-                  <div class="font-mono text-xs text-dim" x-text="m.rotation ? m.rotation : '—'"></div>
-                  <div class="text-right font-mono text-xs tabular-nums" :class="m.chance>=5 ? 'text-haz' : 'text-dim'" x-text="$store.wf.fmt(m.chance)+'%'"></div>
-                </div>
+          <div class="text-right font-bold text-2xl text-haz tabular-nums" x-text="$store.wf.fmt(l.eff)+'%'"></div>
+
+          <div class="min-w-0 text-sm">
+            <div class="leading-tight">
+              <template x-for="(p, pi) in l.parts" :key="p.item">
+                <span><span x-text="p.item"></span><span x-show="pi < l.parts.length-1" class="text-dim">, </span></span>
               </template>
             </div>
+            <div class="text-[11px] text-dim mt-0.5 truncate">
+              <span x-text="$store.wf.t('via')+': '"></span><span x-text="l.relics.map(r=>r.relic).filter((v,idx,a)=>a.indexOf(v)===idx).join(', ')"></span>
+            </div>
           </div>
+
+          <div class="text-right font-mono tabular-nums" x-text="$store.wf.expected(l.eff)"></div>
         </div>
       </template>
 
-      <div x-show="!$store.wf.ranked.length" class="p-6 text-dim text-sm text-center" x-text="$store.wf.t('no_relics')"></div>
+      <div x-show="!$store.wf.locations.length" class="p-6 text-dim text-sm text-center" x-text="$store.wf.t('no_relics')"></div>
     </div>
 
     <p x-show="$store.wf.selCount" class="text-[11px] text-dim leading-relaxed max-w-3xl" x-text="$store.wf.t('note')"></p>
